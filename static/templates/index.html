@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container-fluid" id="container">
+      Quem está utilizando o app?
+        <div id="users">
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+     const setName = function(id) {
+         window.localStorage.setItem('user', id);
+         window.location.href = "banco/"
+     }
+     $.ajax({
+      url: "http://localhost:8000/api/user",
+      success: function(response){
+          response.map(function(el){
+              displayUser(el.name, el.sex, el.id)
+          })
+      }});
+
+     const displayUser = function(name, sex, id) {
+         let color = 'primary'
+         if (sex !== 0) {
+             color = 'danger'
+         }
+         $('#users').append(
+            `<div class="card">
+                <a onclick="setName('${id}')"
+                   class="btn btn-${color}"
+                >${name}
+                </a>
+            </div>`)
+        }
+</script>
+{% endblock %}

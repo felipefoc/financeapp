@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container-fluid" id="container">
+      Qual cartão foi usado?
+        <div id="bank_cards">
+
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block script %}
+<script>
+     $.ajax({
+      url: "http://localhost:8000/api/bank",
+      success: function(response){
+          response.map(function(el){
+              displayBanks(el.name, el.id)
+          })
+      }});
+
+      const displayBanks = function(name, id) {
+         $('#bank_cards').append(
+            `<div class="card">
+                <a onclick="setName('${id}')"
+                   class="btn btn-warning"
+                >${name}
+                </a>
+            </div>`)
+      }
+
+      const setName = function(bank_id) {
+         window.localStorage.setItem('bank_id', bank_id);
+         window.location.assign("compra/")
+      }
+</script>
+{% endblock %}
+

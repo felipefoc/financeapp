@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <form id="form">
+    <div class="container-fluid" id="container">
+      Débito ou Crédito?
+        <div id="payment_methods">
+            <div class="card">
+                <a onclick="showCredit('2')"
+                   class="btn btn-primary">
+                Débito
+                </a>
+            </div>
+            <div class="card">
+                <a onclick="showCredit('1')"
+                   class="btn btn-primary">
+                Crédito
+                </a>
+            </div>
+        </div>
+        <div id="if_credit" style="display: none">
+            <div id="show_installments">
+                Quantas vezes?
+                <select class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" id="installments">
+                  <option selected>Parcelas</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                  <option value="11">11</option>
+                  <option value="12">12</option>
+                </select>
+            </div>
+
+            Produto
+            <div>
+                <input type="text" class="form-control form-control-lg mb-3" id="product_name">
+            </div>
+
+            Categoria
+            <select class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" id="categories">
+              <option selected>Categorias</option>
+            </select>
+
+            Valor
+            <div>
+                <input class="form-control form-control-lg mb-3 numeric" type="text" value="" id="value">
+            </div>
+
+            Quantidade
+            <div>
+                <input type="number" class="form-control form-control-lg mb-3" id="quantity">
+            </div>
+
+            <button type="submit"
+               class="btn btn-warning center">
+            Salvar
+            </button> <p id="total"></p> <p id="total_parcelado"></p>
+        </div>
+    </div>
+    </form>
+{% endblock %}
+
+{% block script %}
+<script>
+const categories = $.ajax({
+      url: "http://localhost:8000/api/category",
+      success: function(response){
+          response.map(function(el){
+              displayCategories(el.category, el.id)
+          })
+      }});
+
+const displayCategories = function(category, id) {
+     $('#categories').append(
+        `<option value="${id}">${category}</option>`
+     )
+  }
+
+$(".numeric").mask('9999.99')
+
+const showCredit = function(kind_id) {
+    $('#if_credit').css('display', 'block')
+    window.localStorage.setItem('kind', kind_id);
+    let kind = localStorage.getItem('kind')
+    if (kind === '2'){
+        $('#show_installments').hide()
+    }
+}
+
+$("#value, #quantity").on('change', function() {
+    let value = $('#value').val()
+    let quantity = $('#quantity').val()
+    $("#total").text(`Total R$ ${value * quantity}`)
+});
+
+$("#form").on("submit", function(event) {
+  event.preventDefault();
+  // Produto
+    let productName = $('#product_name').val()
+    let productCategory = $('#categories').val()
+    let productValue = $('#value').val()
+  // Pedido
+    let quantity = $('#quantity').val()
+    let installments = $('#installments').val()
+
+    validate(installments, productCategory, quantity, productValue)
+
+    post_data = {
+          "name": productName,
+          "category_id": parseInt(productCategory),
+          "price": parseFloat(productValue)
+        }
+
+    last_data = {
+        "user_id": parseInt(localStorage.getItem('user')),
+        "quantity": parseInt(quantity),
+        "bank_id": parseInt(localStorage.getItem('bank_id')),
+        "kind": parseInt(localStorage.getItem('kind')),
+        "installments": parseInt(installments)
+    }
+    $.ajax({
+        type: "POST",
+        url: 'http://localhost:8000/api/product',
+        data: JSON.stringify(post_data),
+        dataType: 'json',
+        success: function(data) {
+            let product_id = parseInt(data['data'])
+            last_data['product'] = [product_id]
+             $.ajax({
+                type: "POST",
+                url: 'http://localhost:8000/api/purchase',
+                data: JSON.stringify(last_data),
+                dataType: 'json',
+                success: function() {
+                    alert('Pedido salvo com sucesso')
+                }})
+        }})
+    });
+
+const validate = function (parcelas, categorias, quatidade, valor) {
+    if (parcelas === 'Parcelas') {
+        alert('Falta quantidade de parcelas')
+        return
+    }
+    if (categorias === 'Categorias') {
+        alert('Falta categoria do produto')
+        return
+    }
+    if (quatidade === '') {
+        alert('Falta definir a quantidade')
+        return
+    }
+    if (valor === '') {
+        alert('Falta definir o valor')
+        return
+    }
+}
+</script>
+{% endblock %}
