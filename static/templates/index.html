@@ -15,7 +15,7 @@
          window.location.href = "banco/"
      }
      $.ajax({
-      url: "http://localhost:8000/api/user",
+      url: "https://focky-finance-app.herokuapp.com/api/user",
       success: function(response){
           response.map(function(el){
               displayUser(el.name, el.sex, el.id)

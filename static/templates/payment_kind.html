@@ -69,7 +69,7 @@
 {% block script %}
 <script>
 const categories = $.ajax({
-      url: "http://localhost:8000/api/category",
+      url: "https://focky-finance-app.herokuapp.com/api/category",
       success: function(response){
           response.map(function(el){
               displayCategories(el.category, el.id)
@@ -126,7 +126,7 @@ $("#form").on("submit", function(event) {
     }
     $.ajax({
         type: "POST",
-        url: 'http://localhost:8000/api/product',
+        url: 'https://focky-finance-app.herokuapp.com/api/product',
         data: JSON.stringify(post_data),
         dataType: 'json',
         success: function(data) {
@@ -134,7 +134,7 @@ $("#form").on("submit", function(event) {
             last_data['product'] = [product_id]
              $.ajax({
                 type: "POST",
-                url: 'http://localhost:8000/api/purchase',
+                url: 'https://focky-finance-app.herokuapp.com/purchase',
                 data: JSON.stringify(last_data),
                 dataType: 'json',
                 success: function() {
